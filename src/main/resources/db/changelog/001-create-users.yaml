@@ -53,3 +53,9 @@ databaseChangeLog:
               - column:
                   name: updated_at
                   type: TIMESTAMP
+        - createIndex:
+            indexName: "user_index"
+            tableName: users
+            columns:
+              - column:
+                  name: email

@@ -1,0 +1,61 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: hoks
+
+      changes:
+        - createTable:
+            tableName: payment_cards
+
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: fk_user_id
+                    referencedTableName: users
+                    referencedColumnNames: id
+                    nullable: false
+              - column:
+                  name: number
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: holder
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expiration_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: active
+                  type: boolean
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+
+        - createIndex:
+            indexName: "cards_index"
+            tableName: payment-cards
+            columns:
+              - column:
+                  name: number
