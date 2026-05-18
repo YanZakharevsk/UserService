@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 1
+      id: 2
       author: hoks
 
       changes:
@@ -55,7 +55,7 @@ databaseChangeLog:
 
         - createIndex:
             indexName: "cards_index"
-            tableName: payment-cards
+            tableName: payment_cards
             columns:
               - column:
                   name: number
