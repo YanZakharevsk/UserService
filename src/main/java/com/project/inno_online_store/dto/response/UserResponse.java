@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 public class UserResponse {
@@ -14,4 +15,6 @@ public class UserResponse {
     private String email;
     private Boolean isActive;
     private List<PaymentCardShortResponse> paymentCards;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
