@@ -6,17 +6,16 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Set;
+import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
-
 
     @Query(value = """
         select * 
         from users
         where active = true 
 """, nativeQuery = true)
-    Set<User> findActiveUsers();
+    List<User> findActiveUsers();
 
 }
