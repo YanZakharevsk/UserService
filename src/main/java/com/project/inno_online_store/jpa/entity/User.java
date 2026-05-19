@@ -30,9 +30,10 @@ public class User extends BaseAuditableEntity {
 
     private String surname;
 
-    @Column(name = "birth_date")
+    @Column(name = "birth_date", updatable = false)
     private LocalDate birthDate;
 
+    @Column(updatable = false)
     private String email;
 
     @Column(name = "active")
