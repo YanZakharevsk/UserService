@@ -1,5 +1,6 @@
 package com.project.inno_online_store.jpa.entity;
 
+import com.project.inno_online_store.jpa.repository.UserRepository;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;

@@ -1,5 +1,6 @@
 package com.project.inno_online_store.jpa.entity;
 
+import com.project.inno_online_store.jpa.repository.UserRepository;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
@@ -19,7 +20,6 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseAuditableEntity {
-
 
     @CreatedDate
     @Column(updatable = false)
