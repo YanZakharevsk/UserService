@@ -58,7 +58,7 @@ public class UserController {
                                                                                 @Min(value = 1, message = "Size number can not less than 1")
                                                                                     @Max(value = 100, message = "Size number can not more than 100")
                                                                                 @RequestParam(defaultValue = "10") int size
-    ){
+    ) {
         UserSearchCriteria criteria = new UserSearchCriteria();
         criteria.setName(name);
         criteria.setSurname(surname);
@@ -67,8 +67,8 @@ public class UserController {
 
         UserFilter userFilter = new UserFilter(criteria.getName(), criteria.getSurname());
         PageResponse<UserResponse> userResponses = userService.getAllUsersWithPaginationAndFilter(userFilter, criteria.getPage(), criteria.getSize());
-          return ResponseEntity.status(HttpStatus.OK)
-                  .body(userResponses);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userResponses);
     }
 
     @PutMapping("/me")
