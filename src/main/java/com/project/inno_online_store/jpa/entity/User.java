@@ -1,11 +1,8 @@
 package com.project.inno_online_store.jpa.entity;
 
-import com.project.inno_online_store.jpa.repository.UserRepository;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
-import org.springframework.stereotype.Indexed;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -17,7 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor()
 @AllArgsConstructor
 public class User extends BaseAuditableEntity {
 
