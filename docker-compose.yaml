@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+
+  user-postgres:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+    networks:
+      - user-service-network
+
+  user-redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6380:6379"
+    networks:
+      - user-service-network
+
+  user-app:
+    build: .
+    restart: on-failure
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - Djava.net.preferIPv4Stack=true
+    depends_on:
+      - user-postgres
+      - user-redis
+    networks:
+      - user-service-network
+
+volumes:
+  user_postgres_data:
+
+networks:
+  user-service-network:
+    external: true
