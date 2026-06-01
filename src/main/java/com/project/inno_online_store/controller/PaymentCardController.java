@@ -11,6 +11,7 @@ import com.project.inno_online_store.service.PaymentCardService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +26,7 @@ public class PaymentCardController {
     }
 
     @PostMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal")
     public ResponseEntity<PaymentCardResponse> createPaymentCard(@PathVariable(name = "id") Long userId, @Valid @RequestBody CreatePaymentCardRequest paymentCardRequest){
 
         PaymentCardResponse response = paymentCardService.createPaymentCard(userId, paymentCardRequest);
@@ -34,6 +36,7 @@ public class PaymentCardController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @paymentCardServiceImpl.isCardOwner(#cardId, authentication.principal)")
     public ResponseEntity<PaymentCardResponse> getPaymentCardById(@PathVariable(name = "id") Long cardId){
         PaymentCardResponse paymentCardResponse = paymentCardService.getPaymentCardById(cardId);
 
@@ -42,6 +45,7 @@ public class PaymentCardController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PageResponse<PaymentCardResponse>> getAllPaymentCardsWithPagination(@Valid @RequestBody PaymentCardPageRequest pageRequest){
         PageResponse<PaymentCardResponse> paymentCardResponses = paymentCardService.getAllPaymentCardsWithPagination(pageRequest.getPage(), pageRequest.getSize());
         return ResponseEntity.status(HttpStatus.OK)
@@ -49,6 +53,7 @@ public class PaymentCardController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @paymentCardServiceImpl.isCardOwner(#cardId, authentication.principal)")
     public ResponseEntity<PaymentCardShortResponse> updatePaymentCard(@PathVariable(name = "id") Long cardId, @Valid @RequestBody UpdatePaymentCardRequest paymentCardRequest){
         PaymentCardShortResponse response = paymentCardService.updatePaymentCardById(cardId, paymentCardRequest);
 
@@ -57,6 +62,7 @@ public class PaymentCardController {
     }
 
     @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PaymentCardResponse> activateCard(@PathVariable(name = "id") Long cardId){
         PaymentCardResponse response = paymentCardService.activatePaymentCard(cardId);
 
@@ -65,6 +71,7 @@ public class PaymentCardController {
     }
 
     @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PaymentCardResponse> deactivateCard(@PathVariable(name = "id") Long cardId){
         PaymentCardResponse response = paymentCardService.deactivatePaymentCard(cardId);
 
@@ -73,6 +80,7 @@ public class PaymentCardController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @paymentCardServiceImpl.isCardOwner(#cardId, authentication.principal)")
     public ResponseEntity<Void> deleteCard(@PathVariable(name = "id") Long cardId){
         paymentCardService.deletePaymentCardById(cardId);
         return ResponseEntity.noContent().build();
