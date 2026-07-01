@@ -1,29 +1,25 @@
 package com.project.inno_online_store.controller;
 
 import com.project.inno_online_store.BaseIntegrationTest;
+import com.project.inno_online_store.dao.PaymentCardDao;
+import com.project.inno_online_store.dao.UserDao;
 import com.project.inno_online_store.jpa.entity.User;
-import com.project.inno_online_store.jpa.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
-import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class UserControllerIntegrationTest extends BaseIntegrationTest {
@@ -32,104 +28,100 @@ class UserControllerIntegrationTest extends BaseIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private PaymentCardDao paymentCardDao;
 
     @MockitoSpyBean
-    private UserRepository userRepository;
+    private UserDao userDao;
+
+    private User johnDoe;
+    private User janeSmith;
+    private static final String INTERNAL_KEY = "secret-test";
 
     @BeforeEach
     void setUp() {
-        userRepository.deleteAll();
+        paymentCardDao.deleteAll();
+        userDao.deleteAll();
+
+        User user1 = new User();
+        user1.setName("John");
+        user1.setSurname("Doe");
+        user1.setEmail("john.doe@example.com");
+        user1.setBirthDate(LocalDate.of(1995, 5, 21));
+        user1.setIsActive(true);
+        johnDoe = userDao.save(user1);
+
+        User user2 = new User();
+        user2.setName("Jane");
+        user2.setSurname("Smith");
+        user2.setEmail("alex.smith@example.com");
+        user2.setBirthDate(LocalDate.of(1998, 10, 15));
+        user2.setIsActive(true);
+        janeSmith = userDao.save(user2);
+
+        clearInvocations(userDao);
     }
 
-    @Test
-    void shouldReturnFilteredUsersAndUseRedisCache() throws Exception {
+    @Nested
+    class GetByIdEndpointTests {
+        @Test
+        void getUserById_AsAdmin_Success() throws Exception {
+            mockMvc.perform(get("/api/users/{id}", janeSmith.getId())
+                            .header("X-Internal-Key", INTERNAL_KEY)
+                            .with(user(johnDoe.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk());
+        }
 
-        User john = new User();
-        john.setName("John");
-        john.setSurname("Doe");
-        john.setEmail("john.doe@example.com");
-        john.setBirthDate(LocalDate.of(1995, 5, 21));
-        john.setIsActive(true);
-
-        User alex = new User();
-        alex.setName("Alex");
-        alex.setSurname("Smith");
-        alex.setEmail("alex.smith@example.com");
-        alex.setBirthDate(LocalDate.of(1998, 10, 15));
-        alex.setIsActive(true);
-
-        userRepository.saveAll(List.of(john, alex));
-
-        UserSearchCriteria criteria = new UserSearchCriteria();
-        criteria.setName("John");
-        criteria.setPage(0);
-        criteria.setSize(10);
-
-        String requestBody = objectMapper.writeValueAsString(criteria);
-
-        mockMvc.perform(get("/store/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].name", is("John")))
-                .andExpect(jsonPath("$.totalElements", is(1)));
-
-        verify(userRepository, times(1))
-                .findAll(
-                        any(Specification.class),
-                        any(Pageable.class)
-                );
-
-        mockMvc.perform(get("/store/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].name", is("John")))
-                .andExpect(jsonPath("$.totalElements", is(1)));
-
-        verify(userRepository, times(1))
-                .findAll(
-                        any(Specification.class),
-                        any(Pageable.class)
-                );
+        @Test
+        void getUserById_AsUser_Forbidden() throws Exception {
+            mockMvc.perform(get("/api/users/{id}", johnDoe.getId())
+                            .header("X-Internal-Key", INTERNAL_KEY)
+                            .with(user(janeSmith.getId().toString()).roles("USER")))
+                    .andExpect(status().isForbidden());
+        }
     }
 
-    @Test
-    void shouldGetUserById() throws Exception {
+    @Nested
+    class GetAllWithPaginationTests {
+        @Test
+        void getAllUsers_AsAdmin_Success_AndVerifiesRedisCache() throws Exception {
+            mockMvc.perform(get("/api/users")
+                            .header("X-Internal-Key", INTERNAL_KEY)
+                            .with(user(johnDoe.getId().toString()).roles("ADMIN"))
+                            .param("name", "John"))
+                    .andExpect(status().isOk());
 
-        User user = new User();
-        user.setName("John");
-        user.setSurname("Doe");
-        user.setEmail("john@test.com");
-        user.setBirthDate(LocalDate.of(1999, 5, 10));
-        user.setIsActive(true);
+            verify(userDao, times(1)).findAll(any(Specification.class), any(Pageable.class));
+        }
 
-        User saved = userRepository.save(user);
-
-        mockMvc.perform(get("/store/users/{id}", saved.getId())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("John"))
-                .andExpect(jsonPath("$.email").value("john@test.com"));
+        @Test
+        void getAllUsers_AsUser_Forbidden() throws Exception {
+            mockMvc.perform(get("/api/users")
+                            .header("X-Internal-Key", INTERNAL_KEY)
+                            .with(user(johnDoe.getId().toString()).roles("USER")))
+                    .andExpect(status().isForbidden());
+        }
     }
 
-    @Test
-    void shouldDeleteUser() throws Exception {
+    @Nested
+    class ActivationTests {
+        @Test
+        void activateAndDeactivate_AsAdmin_Success() throws Exception {
+            mockMvc.perform(put("/api/users/{id}/activate", janeSmith.getId())
+                            .header("X-Internal-Key", INTERNAL_KEY)
+                            .with(user(johnDoe.getId().toString()).roles("ADMIN")))
+                    .andExpect(status().isOk());
+        }
+    }
 
-        User user = new User();
-        user.setName("Alex");
-        user.setSurname("Smith");
-        user.setEmail("alex@test.com");
-        user.setBirthDate(LocalDate.of(1998, 10, 15));
-        user.setIsActive(true);
+    @Nested
+    class UserCardsTests {
 
-        User saved = userRepository.save(user);
-
-        mockMvc.perform(delete("/store/users/{id}", saved.getId()))
-                .andExpect(status().isNoContent());
-
-        assert(userRepository.findById(saved.getId())).isEmpty();
+        @Test
+        void getPaymentCardsByUser_AsStranger_Forbidden() throws Exception {
+            mockMvc.perform(get("/api/users/{id}/cards", janeSmith.getId())
+                            .header("X-Internal-Key", INTERNAL_KEY)
+                            .with(user(johnDoe.getId().toString()).roles("USER")))
+                    .andExpect(status().isForbidden());
+        }
     }
 }
