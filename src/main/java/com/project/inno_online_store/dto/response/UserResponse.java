@@ -2,7 +2,6 @@ package com.project.inno_online_store.dto.response;
 
 import lombok.Data;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 import java.time.LocalDateTime;
