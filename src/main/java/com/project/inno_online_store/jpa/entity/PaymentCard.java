@@ -50,8 +50,8 @@ public class PaymentCard extends BaseAuditableEntity{
                  .getPersistentClass()
                 : this.getClass();
         if(thisEffectiveClass != oEffectiveClass) return false;
-        User user = (User) o;
-        return getId() != null && Objects.equals(getId(), user.getId());
+        PaymentCard card = (PaymentCard) o;
+        return getId() != null && Objects.equals(getId(), card.getId());
     }
 
     @Override

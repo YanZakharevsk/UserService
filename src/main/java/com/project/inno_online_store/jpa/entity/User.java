@@ -41,7 +41,6 @@ public class User extends BaseAuditableEntity {
 
     @OneToMany(mappedBy = "user", orphanRemoval = true,cascade = CascadeType.ALL)
     @ToString.Exclude
-    @Size(max = 5)
     private Set<PaymentCard> paymentCards;
 
     @Override
