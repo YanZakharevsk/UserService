@@ -1,7 +1,9 @@
 package com.project.inno_online_store.exception;
 
-public class PaymentCardNotFoundException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class PaymentCardNotFoundException extends BaseException {
     public PaymentCardNotFoundException(Long cardId) {
-        super("Card with id " + cardId + " not found");
+        super("Card with id " + cardId + " not found","CARD_NOT_FOUND", HttpStatus.NOT_FOUND);
     }
 }
