@@ -12,7 +12,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - user_postgres_data:/var/lib/postgresql/data
+      - user_postgres_data:/var/lib/postgre2sql/data
     networks:
       - user-service-network
 
@@ -25,7 +25,7 @@ services:
       - user-service-network
 
   user-app:
-    build: .
+    image: yanusevich/user-service:1.0
     restart: on-failure
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
